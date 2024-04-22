@@ -156,39 +156,46 @@ export default function TourmalineForm() {
 	// }, [register]);
 
 	async function onSubmit(data: SchemaData) {
-		console.log(data)
-		const body = serialize(data) // convert SchemaData object to FormData
-		// formData.append('denoiseMethod', data.denoiseMethod); // Append denoiseMethod to FormData
-		// if(data.taxonomicLevel !== undefined) { // Ensure taxonomicLevel is defined before appending
-		//   formData.append('taxonomicLevel', data.taxonomicLevel.toString()); // Convert taxonomicLevel to string and append
-		// }
+		console.log(data);
+	
+		// Initialize FormData object
+		const formData = new FormData(); // Convert SchemaData object to FormData, instead of serializing like before.
+		//This change allows us to receive the inputs with their titles, instead of just a blob of JSON
+	
+		// Dynamically append form fields to multipart-formdata
+		Object.entries(data).forEach(([key, value]) => {
+			if (value !== undefined && typeof value !== 'object') {
+				formData.append(key, value.toString());
+			}
+		})
 
-		// Append metadata file to FormData if it exists
-		// if (data.metadataFile) {
-		//   formData.append('metadataFile', data.metadataFile[0]); // Append the first file in the metadataFile FileList
-		// }
-
+		//while we can dynamically append form fields to our multipart-formdata, we have to treat files differently:
+		if (data.metadataFile && data.metadataFile.length > 0 && data.metadataFile[0] instanceof File) {
+			formData.append('metadataFile', data.metadataFile[0]);
+		} else {
+			console.error('No valid metadata file provided or file format is incorrect');
+		}
+	
 		try {
 			const response = await fetch(`${getRemoteUrl()}/tourmalineReceive`, {
 				method: "POST",
-				headers: {
-					"Content-Type": "multipart/form-data"
-				},
-				body // Send the FormData object as the body of the request
+				// Important: Do not set Content-Type header manually; let the browser handle it
+				// "Content-Type": "multipart/form-data" // This line is legacy code
+				body: formData // Send the FormData object as the body of the request. This lets us capture inputs with their corresponding titles
 			});
-
+	
 			if (!response.ok) {
 				throw new Error(`Server responded with status: ${response.status}`);
 			}
-
+	
 			setFormSubmitted(true); // Indicate the form has been submitted successfully
 			const result = await response.json();
 			console.log(result); // Log the server response
 		} catch (error) {
 			console.error('Submission error:', error); // Log any errors
-			setFormSubmitted(false); // Optionally reset formSubmitted to allow resubmission
+			setFormSubmitted(false); // Optionally reset formSubmitted to allow resubmission IF there is an error in submission
 		}
-  	};
+	};
 
 	return (
 		<div className="flex w-full bg-neutral rounded-2xl">
