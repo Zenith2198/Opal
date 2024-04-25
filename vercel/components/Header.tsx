@@ -3,8 +3,15 @@ import Image from "next/image";
 import { getBaseUrl } from "@/helpers/utils";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import TabButton from "@/components/TabButton";
+import DropdownTabButton from "@/components/DropdownTabButton";
 
 export default function Header() {
+	
+	const tourmalineOptions = [
+		{tabName: 'Tourmaline 1.0', route: '/tourmaline1' },
+		{tabName: 'Tourmaline 2.0', route: '/tourmaline' }
+	];
+
 	return (
 		<header className="sticky top-0 z-50 bg-secondary">
 			<div className="justify-between navbar p-0">
@@ -19,15 +26,18 @@ export default function Header() {
 					<div className="hidden lg:block">
 						{/* <Search/> */}
 					</div>
-				<div className="navbar-center hidden lg:flex">
-					<TabButton tabName='Home' route='/' />
-					<TabButton tabName='Tourmaline' route='/tourmaline' />
-					<TabButton tabName='About' route='/about' />
-				</div>
+					<div className="navbar-center hidden lg:flex relative">
+          
+          {/* Dropdown wrapper using details */}
+		  <div className="navbar-center hidden lg:flex">
+          <TabButton tabName='Home' route='/' />
+          <DropdownTabButton name='Tourmaline' options={tourmalineOptions} />
+          <TabButton tabName='About' route='/about' />
+        </div>
+        </div>
 				</div>
 				<div className="navbar-center hidden lg:flex">
 					{/* <Nav/> */}
-					<div></div>
 				</div>
 				<div className="navbar-end mr-5">
 					<SignedIn>
