@@ -80,3 +80,16 @@ async def tourmaline_receive():
   except Exception as e:  # Added to catch and print the exception
     print(f"Error processing request: {e}")
     return {"error": "Server could not handle the request"}, 500
+  
+
+@app.route("/tourmalineConfig", methods=["POST"])
+async def tourmaline_Config():
+	try:
+		form_fields = await request.form
+		print("Form data received:")
+		for name, value in form_fields.items():
+			print(f"{name}:{value}")
+		return {"message": "Form data received and printed successfully"}, 200
+	except Exception as e:
+		print(f"Error processing request: {e}")
+		return{"error": "server could not handle the request"}, 500

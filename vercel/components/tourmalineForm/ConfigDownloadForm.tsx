@@ -1,11 +1,4 @@
 "use client"
-/*
----TODO---
-
-  - Filtering tab needs to be completed after discussions
-
-
-*/
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -13,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { getRemoteUrl } from '@/helpers/utils';
 import { serialize } from 'object-to-formdata';
 import InfoButton from '@/components/tourmalineForm/InfoButton';
-import { schema, SchemaData } from "@/components/tourmalineForm/schema";
+import { ConfigDownloadSchema, SchemaData } from "@/components/tourmalineForm/ConfigDownloadSchema";
 import DenoiseMethodTab from '@/components/tourmalineForm/FormTabs/DenoiseMethodTab';
 import AboutTab from '@/components/tourmalineForm/FormTabs/AboutTab';
 import TaxonomicTab from '@/components/tourmalineForm/FormTabs/TaxonomicTab';
@@ -25,11 +18,10 @@ import DeicodeBetaTab from '@/components/tourmalineForm/FormTabs/DeicodeBetaTab'
 import ThreadsTab from '@/components/tourmalineForm/FormTabs/ThreadsTab';
 import ReportThemeTab from '@/components/tourmalineForm/FormTabs/ReportThemeTab';
 import FilteringTab from '@/components/tourmalineForm/FormTabs/FilteringTab';
-import MetadataTab from '@/components/tourmalineForm/FormTabs/MetadataTab';
 
 
 
-export default function TourmalineForm() {
+export default function ConfigDownloadForm() {
 	const [activeTab, setActiveTab] = useState('About'); // Initial active tab
 	const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -45,7 +37,7 @@ export default function TourmalineForm() {
 		'Deicode Beta Diversity',
 		'Report Theme',
 		'Filtering',
-		'Metadata',
+		'Threads',
 		'Submit'
 	];
 
@@ -62,7 +54,7 @@ export default function TourmalineForm() {
 	}
 
 	const { register, handleSubmit, formState: { isValid, errors }, watch } = useForm<SchemaData>({
-    	resolver: zodResolver(schema),
+    	resolver: zodResolver(ConfigDownloadSchema),
     	mode: 'onBlur',
 		//All default values can be set here
 		defaultValues: {
@@ -122,7 +114,7 @@ export default function TourmalineForm() {
 
 			filtering_election: "unfiltered",
 
-			/*
+
 			dada2pe_threads: 8,
 			dada2se_threads: 8,
 			deblur_threads: 8,
@@ -131,7 +123,7 @@ export default function TourmalineForm() {
 			phylogeny_fasttree_threads: 8,
 			diversity_core_metrics_phylogenetic_threads: 8,
 			other_threads: 8
-			*/
+
 		}
 	});
 
@@ -162,16 +154,9 @@ export default function TourmalineForm() {
 				formData.append(key, value.toString());
 			}
 		})
-
-		//while we can dynamically append form fields to our multipart-formdata, we have to treat files differently:
-		if (data.metadataFile && data.metadataFile.length > 0 && data.metadataFile[0] instanceof File) {
-			formData.append('metadataFile', data.metadataFile[0]);
-		} else {
-			console.error('No valid metadata file provided or file format is incorrect');
-		}
 	
 		try {
-			const response = await fetch(`${getRemoteUrl()}/tourmalineReceive`, {
+			const response = await fetch(`${getRemoteUrl()}/tourmalineConfig`, {
 				method: "POST",
 				// Important: Do not set Content-Type header manually; let the browser handle it
 				// "Content-Type": "multipart/form-data" // This line is legacy code
@@ -224,11 +209,8 @@ export default function TourmalineForm() {
 				<li className={activeTab === 'Filtering' ? 'bg-secondary text-white rounded-2xl' : ''}>
 					<a onClick={() => setActiveTab('Filtering')}>Filtering</a>
 				</li>
-				{/* <li className={activeTab === 'Threads' ? 'bg-secondary text-white rounded-2xl' : ''}>
+				<li className={activeTab === 'Threads' ? 'bg-secondary text-white rounded-2xl' : ''}>
 					<a onClick={() => setActiveTab('Threads')}>Threads</a>
-				</li> */}
-				<li className={activeTab === 'Metadata' ? 'bg-secondary text-white rounded-2xl' : ''}>
-					<a onClick={() => setActiveTab('Metadata')}>Metadata</a>
 				</li>
 				<li className={activeTab === 'Submit' ? 'bg-secondary text-white rounded-2xl' : ''}>
 					<a onClick={() => setActiveTab('Submit')}>Submit</a>
@@ -300,15 +282,8 @@ export default function TourmalineForm() {
 							errors={errors}
 						></FilteringTab>
 					)}
-					{/* {activeTab === 'Threads' && (
-						//write me the 8 fields for threads
+					{activeTab === 'Threads' && (
 						<ThreadsTab register={register} errors={errors}></ThreadsTab>
-					)} */}
-					{activeTab === 'Metadata' && (
-						<MetadataTab
-							register={register}
-							errors={errors}
-						></MetadataTab>
 					)}
 					{activeTab === 'Submit' && (
 						<div className='pt-24'>
